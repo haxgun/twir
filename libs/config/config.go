@@ -29,6 +29,8 @@ type Config struct {
 	S3Region           string `required:"false" envconfig:"CDN_REGION"`
 	S3AccessToken      string `required:"false" envconfig:"CDN_ACCESS_TOKEN"`
 	S3SecretToken      string `required:"false" envconfig:"CDN_SECRET_TOKEN"`
+	SteamUserName      string `required:"false" envconfig:"STEAM_USERNAME"`
+	SteamPassword      string `required:"false" envconfig:"STEAM_PASSWORD"`
 }
 
 func New() (*Config, error) {

@@ -13,6 +13,7 @@ use (
 	./apps/watched
 	./apps/websockets
 	./apps/ytsr
+	./apps/dota-go
 	./libs/config
 	./libs/crypto
 	./libs/gomodels
