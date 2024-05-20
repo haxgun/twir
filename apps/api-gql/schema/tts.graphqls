@@ -1,0 +1,59 @@
+extend type Query {
+	ttsSettings: TTSSettings! @isAuthenticated @hasChannelRolesDashboardPermission(permission: VIEW_OVERLAYS)
+	ttsVoices: TTSVoices! @isAuthenticated
+}
+
+enum TTSSettingsVoiceService {
+	RH
+	SILERO
+}
+
+type TTSSettings {
+	enabled: Boolean!
+	rate: Int!
+	volume: Int!
+	pitch: Int!
+	voice: String!
+	voiceService: TTSSettingsVoiceService!
+	allowUsersChooseVoiceInMainCommand: Boolean!
+	maxSymbols: Int!
+	disallowedVoices: [TTSSettingsDisallowedVoice!]!
+	doNotReadEmoji: Boolean!
+	doNotReadTwitchEmotes: Boolean!
+	doNotReadLinks: Boolean!
+	readChatMessages: Boolean!
+	readChatMessagesNicknames: Boolean!
+	usersSettings: [TTSUserSettings!]! @goField(forceResolver: true)
+}
+
+type TTSSettingsDisallowedVoice {
+	service: TTSSettingsVoiceService!
+	voice: String!
+}
+
+type TTSUserSettings {
+	userId: String!
+	user: TwirUserTwitchInfo! @goField(forceResolver: true)
+	voice: String!
+	voiceService: TTSSettingsVoiceService!
+	rate: Int!
+	pitch: Int!
+}
+
+type TTSVoices {
+	rh: TTSRHVoices! @goField(forceResolver: true)
+}
+
+type TTSRHVoices {
+	voices: [TTSRHVoiceInfo!]!
+}
+
+type TTSRHVoiceInfo {
+	code: String!
+	name: String!
+	country: String!
+	gender: String!
+	lang: String!
+	no: Int!
+}
+
