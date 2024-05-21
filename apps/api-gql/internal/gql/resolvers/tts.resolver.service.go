@@ -74,16 +74,28 @@ func ttsVoiceGqlServiceToDb(service gqlmodel.TTSSettingsVoiceService) model.Chan
 
 func (r *queryResolver) ttsGetChannelSettings(
 	ctx context.Context,
+	channelID *string,
 ) (*gqlmodel.TTSSettings, error) {
-	dashboardId, err := r.sessions.GetSelectedDashboard(ctx)
-	if err != nil {
-		return nil, err
+	var selectedChannelId string
+	if channelID != nil {
+		selectedChannelId = *channelID
+	} else {
+		dashboardId, err := r.sessions.GetSelectedDashboard(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		selectedChannelId = dashboardId
+	}
+
+	if selectedChannelId == "" {
+		return nil, fmt.Errorf("channel id is empty")
 	}
 
 	var entity model.ChannelsTTS
 	if err := r.gorm.
 		WithContext(ctx).
-		Where(`"channel_id" = ?`, dashboardId).
+		Where(`"channel_id" = ?`, selectedChannelId).
 		Preload("DisallowedVoices").
 		First(&entity).Error; err != nil {
 		return nil, fmt.Errorf("failed to get tts settings: %w", err)
@@ -126,7 +138,7 @@ func (r *tTSSettingsResolver) getUsersSettings(
 		return nil, err
 	}
 
-	var entities []model.ChannelTTSUserSettings
+	var entities []model.ChannelsTTSUserSettings
 	if err := r.gorm.
 		WithContext(ctx).
 		Where(`"channel_id" = ?`, dashboardId).

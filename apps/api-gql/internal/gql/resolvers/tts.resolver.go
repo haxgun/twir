@@ -15,8 +15,8 @@ import (
 )
 
 // TtsSettings is the resolver for the ttsSettings field.
-func (r *queryResolver) TtsSettings(ctx context.Context) (*gqlmodel.TTSSettings, error) {
-	return r.ttsGetChannelSettings(ctx)
+func (r *queryResolver) TtsSettings(ctx context.Context, channelID *string) (*gqlmodel.TTSSettings, error) {
+	return r.ttsGetChannelSettings(ctx, channelID)
 }
 
 // TtsVoices is the resolver for the ttsVoices field.

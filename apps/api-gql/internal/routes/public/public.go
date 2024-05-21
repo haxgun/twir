@@ -31,8 +31,18 @@ func New(opts Opts) *Public {
 		cachedCommands: opts.CachedCommands,
 	}
 
-	opts.Server.GET("/v1/public/badges", p.HandleBadgesGet)
-	opts.Server.GET("/v1/public/channels/:channelId/commands", p.HandleChannelCommandsGet)
+	opts.Server.GET(
+		"/v1/public/badges",
+		p.HandleBadgesGet,
+	)
+	opts.Server.GET(
+		"/v1/public/channels/:channelId/commands",
+		p.HandleChannelCommandsGet,
+	)
+	opts.Server.POST(
+		"/v1/public/overlays/tts/generate-file",
+		p.HandleChannelTTSGenerateFilePost,
+	)
 
 	return p
 }

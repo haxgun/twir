@@ -45,7 +45,7 @@ func (ChannelsTTSDisallowedVoice) TableName() string {
 	return "channels_overlays_tts_disallowed_voices"
 }
 
-type ChannelTTSUserSettings struct {
+type ChannelsTTSUserSettings struct {
 	ID        uuid.UUID              `gorm:"column:id;primary_key;type:uuid"`
 	ChannelID string                 `gorm:"column:channel_id;type:text"`
 	UserID    string                 `gorm:"column:user_id;type:text"`
@@ -56,6 +56,6 @@ type ChannelTTSUserSettings struct {
 	Volume    int                    `gorm:"column:volume;type:int"`
 }
 
-func (ChannelTTSUserSettings) TableName() string {
+func (ChannelsTTSUserSettings) TableName() string {
 	return "channels_overlays_tts_users_settings"
 }

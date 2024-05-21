@@ -37,22 +37,22 @@ var PitchCommand = &types.DefaultCommand{
 		error,
 	) {
 		result := &types.CommandsHandlerResult{}
-		channelSettings, channelModele := getSettings(
+		channelSettings := getSettings(
 			ctx,
 			parseCtx.Services.Gorm,
 			parseCtx.Channel.ID,
-			"",
+			nil,
 		)
 
 		if channelSettings == nil {
 			return result, nil
 		}
 
-		userSettings, currentUserModel := getSettings(
+		userSettings := getSettings(
 			ctx,
 			parseCtx.Services.Gorm,
 			parseCtx.Channel.ID,
-			parseCtx.Sender.ID,
+			&parseCtx.Sender.ID,
 		)
 
 		pitchArg := parseCtx.ArgsParser.Get(ttsPitchArgName)
@@ -77,7 +77,7 @@ var PitchCommand = &types.DefaultCommand{
 
 		if parseCtx.Channel.ID == parseCtx.Sender.ID {
 			channelSettings.Pitch = pitch
-			err := updateSettings(ctx, parseCtx.Services.Gorm, channelModele, channelSettings)
+			err := updateSettings(ctx, parseCtx.Services.Gorm, channelSettings)
 			if err != nil {
 				return nil, &types.CommandHandlerError{
 					Message: "error while updating settings",
@@ -102,7 +102,7 @@ var PitchCommand = &types.DefaultCommand{
 				}
 			} else {
 				userSettings.Pitch = pitch
-				err := updateSettings(ctx, parseCtx.Services.Gorm, currentUserModel, userSettings)
+				err := updateSettings(ctx, parseCtx.Services.Gorm, userSettings)
 				if err != nil {
 					return nil, &types.CommandHandlerError{
 						Message: "error while updating settings",

@@ -1,5 +1,8 @@
 extend type Query {
-	ttsSettings: TTSSettings! @isAuthenticated @hasChannelRolesDashboardPermission(permission: VIEW_OVERLAYS)
+	"""
+	Get TTS settings for the channel id, if the channel id is not provided, the current selected dashboard will be used.
+	"""
+	ttsSettings(channelId: String): TTSSettings!
 	ttsVoices: TTSVoices! @isAuthenticated
 }
 
@@ -15,14 +18,14 @@ type TTSSettings {
 	pitch: Int!
 	voice: String!
 	voiceService: TTSSettingsVoiceService!
-	allowUsersChooseVoiceInMainCommand: Boolean!
-	maxSymbols: Int!
-	disallowedVoices: [TTSSettingsDisallowedVoice!]!
-	doNotReadEmoji: Boolean!
-	doNotReadTwitchEmotes: Boolean!
-	doNotReadLinks: Boolean!
-	readChatMessages: Boolean!
-	readChatMessagesNicknames: Boolean!
+	allowUsersChooseVoiceInMainCommand: Boolean! @isAuthenticated @hasChannelRolesDashboardPermission(permission: VIEW_OVERLAYS)
+	maxSymbols: Int! @isAuthenticated @hasChannelRolesDashboardPermission(permission: VIEW_OVERLAYS)
+	disallowedVoices: [TTSSettingsDisallowedVoice!]! @isAuthenticated @hasChannelRolesDashboardPermission(permission: VIEW_OVERLAYS)
+	doNotReadEmoji: Boolean! @isAuthenticated @hasChannelRolesDashboardPermission(permission: VIEW_OVERLAYS)
+	doNotReadTwitchEmotes: Boolean! @isAuthenticated @hasChannelRolesDashboardPermission(permission: VIEW_OVERLAYS)
+	doNotReadLinks: Boolean! @isAuthenticated @hasChannelRolesDashboardPermission(permission: VIEW_OVERLAYS)
+	readChatMessages: Boolean! @isAuthenticated @hasChannelRolesDashboardPermission(permission: VIEW_OVERLAYS)
+	readChatMessagesNicknames: Boolean! @isAuthenticated @hasChannelRolesDashboardPermission(permission: VIEW_OVERLAYS)
 	usersSettings: [TTSUserSettings!]! @goField(forceResolver: true)
 }
 
@@ -56,4 +59,3 @@ type TTSRHVoiceInfo {
 	lang: String!
 	no: Int!
 }
-

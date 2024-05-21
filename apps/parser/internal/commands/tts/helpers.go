@@ -20,37 +20,61 @@ import (
 	"gorm.io/gorm"
 )
 
+type settings struct {
+	Enabled      bool
+	Rate         int
+	Volume       int
+	Pitch        int
+	Voice        string
+	VoiceService model.ChannelTTSVoiceService
+}
+
 func getSettings(
 	ctx context.Context,
 	db *gorm.DB,
-	channelId, userId string,
-) (*modules.TTSSettings, *model.ChannelModulesSettings) {
-	settings := &model.ChannelModulesSettings{}
-	query := db.
-		WithContext(ctx).
-		Where(`"channelId" = ?`, channelId).
-		Where(`"type" = ?`, "tts")
+	channelId string,
+	userId *string,
+) *settings {
+	channelEntity := &model.ChannelsTTS{}
+	userEntity := &model.ChannelsTTSUserSettings{}
 
-	if userId == channelId {
-		query = query.Where(`"userId" IS NULL`)
-	} else if userId != "" {
-		query = query.Where(`"userId" = ?`, userId)
+	if userId != nil {
+		err := db.WithContext(ctx).Where(
+			"channel_id = ? AND user_id = ?",
+			channelId,
+			userId,
+		).Find(userEntity).Error
+		if err != nil {
+			return nil
+		}
 	} else {
-		query = query.Where(`"userId" IS NULL`)
+		err := db.WithContext(ctx).Where("channel_id = ?", channelId).Find(channelEntity).Error
+		if err != nil {
+			return nil
+		}
 	}
 
-	err := query.First(&settings).Error
-	if err != nil {
-		return nil, nil
+	if userEntity.UserID != "" {
+		return &settings{
+			Enabled:      userEntity.UserID != "",
+			Rate:         userEntity.Rate,
+			Volume:       userEntity.Volume,
+			Pitch:        userEntity.Pitch,
+			Voice:        userEntity.Voice,
+			VoiceService: userEntity.Service,
+		}
+	} else if channelEntity.ChannelID != "" {
+		return &settings{
+			Enabled:      channelEntity.Enabled,
+			Rate:         channelEntity.Rate,
+			Volume:       channelEntity.Volume,
+			Pitch:        channelEntity.Pitch,
+			Voice:        channelEntity.Voice,
+			VoiceService: channelEntity.VoiceService,
+		}
+	} else {
+		return nil
 	}
-
-	data := modules.TTSSettings{}
-	err = json.Unmarshal(settings.Settings, &data)
-	if err != nil {
-		return nil, nil
-	}
-
-	return &data, settings
 }
 
 type Voice struct {
@@ -95,7 +119,7 @@ func updateSettings(
 	ctx context.Context,
 	db *gorm.DB,
 	entity *model.ChannelModulesSettings,
-	settings *modules.TTSSettings,
+	settings *settings,
 ) error {
 	bytes, err := json.Marshal(settings)
 	if err != nil {
@@ -112,8 +136,11 @@ func updateSettings(
 func createUserSettings(
 	ctx context.Context,
 	db *gorm.DB,
-	rate, pitch int,
-	voice, channelId, userId string,
+	rate,
+	pitch int,
+	voice,
+	channelId,
+	userId string,
 ) (
 	*model.ChannelModulesSettings,
 	*modules.TTSSettings,

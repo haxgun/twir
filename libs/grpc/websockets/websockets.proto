@@ -97,6 +97,11 @@ message ObsStopOrStartStream {
 	string channelId = 1;
 }
 
+enum VoiceService {
+	RHVOICE = 0;
+	SILERO = 1;
+}
+
 message TTSMessage {
 	string channelId = 1;
 	string text = 2;
@@ -104,6 +109,7 @@ message TTSMessage {
 	string rate = 4;
 	string pitch = 5;
 	string volume = 6;
+	VoiceService voice_service = 7;
 }
 
 message TTSSkipMessage {

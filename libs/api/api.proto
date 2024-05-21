@@ -120,12 +120,6 @@ service Protected {
 	rpc ModulesOBSWebsocketGet(google.protobuf.Empty) returns (messages.modules_obs_websocket.GetResponse) {}
 	rpc ModulesOBSWebsocketUpdate(messages.modules_obs_websocket.PostRequest) returns (google.protobuf.Empty) {}
 
-	rpc ModulesTTSGet(google.protobuf.Empty) returns (messages.modules_tts.GetResponse) {}
-	rpc ModulesTTSUpdate(messages.modules_tts.PostRequest) returns (google.protobuf.Empty) {}
-	rpc ModulesTTSGetInfo(google.protobuf.Empty) returns (messages.modules_tts.GetInfoResponse) {}
-	rpc ModulesTTSGetUsersSettings(google.protobuf.Empty) returns (messages.modules_tts.GetUsersSettingsResponse) {}
-	rpc ModulesTTSUsersDelete(messages.modules_tts.UsersDeleteRequest) returns (google.protobuf.Empty) {}
-
 	rpc OverlayChatGet(messages.overlays_chat.GetRequest) returns (messages.overlays_chat.Settings) {}
 	rpc OverlayChatGetAll(google.protobuf.Empty) returns (messages.overlays_chat.GetAllResponse) {}
 	rpc OverlayChatCreate(messages.overlays_chat.Settings) returns (messages.overlays_chat.Settings) {}
