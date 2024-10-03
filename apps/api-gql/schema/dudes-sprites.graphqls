@@ -1,0 +1,112 @@
+extend type Query {
+	dudesCatalogSprite(id: String!): DudeSprite
+	dudesCatalogSprites(input: DudesCatalogSpritesInput!): [DudeSprite!]!
+
+	dudesCatalogLayers(search: String, approved: Boolean, layersTypes: [DudeSpriteLayerType!]): [DudeSpriteLayer!]!
+}
+
+input DudesCatalogSpritesInput {
+	search: String,
+	published: Boolean
+	page: Int
+	perPage: Int
+}
+
+extend type Mutation {
+	"""
+	Select sprite from user perspective for channel
+	"""
+	dudesSelectSprite(channelId: String!, spriteId: String!): Boolean! @isAuthenticated
+	"""
+	Unset sprite from channel
+	"""
+	dudesUnselectSprite(channelId: String!, spriteId: String!): Boolean! @isAuthenticated
+	"""
+	Fork sprite from another user to signed user
+	Also layers should be forked
+	"""
+	dudesForkSprite(spriteId: String!): DudeSprite! @isAuthenticated
+
+	dudesCreateSprite(input: CreateSpriteInput!): DudeSprite! @isAuthenticated
+	dudesDeleteSprite(spriteId: String!): Boolean! @isAuthenticated
+	dudesUpdateSprite(spriteId: String!, input: UpdateSpriteInput!): DudeSprite! @isAuthenticated
+
+	dudesCreateLayer(input: CreateLayerInput!): DudeSpriteLayer! @isAuthenticated
+	dudesDeleteLayer(layerId: String!): Boolean! @isAuthenticated
+
+	"""
+	Set sprite for user on broadcaster channel
+	"""
+	dudesChannelSelectSprite(userId: String!, spriteId: String!): Boolean! @isAuthenticated @hasAccessToSelectedDashboard @hasChannelRolesDashboardPermission(permission: DUDES_MANAGE)
+	"""
+	Unset sprite for user on broadcaster channel
+	"""
+	dudesChannelUnselectSprite(userId: String!, spriteId: String!): Boolean! @isAuthenticated @hasAccessToSelectedDashboard @hasChannelRolesDashboardPermission(permission: DUDES_MANAGE)
+}
+
+input CreateSpriteInput {
+	name: String! @validate(constraint: "max=64")
+	listed: Boolean!
+	"""
+	Cannot contains same layer type
+	Layer should contain at least body
+	"""
+	layers: [CreateSpriteInputLayer!]!
+}
+
+input CreateSpriteInputLayer {
+	id: UUID!
+	type: DudeSpriteLayerType
+}
+
+input UpdateSpriteInput {
+	name: String! @validate(constraint: "max=64")
+	listed: Boolean!
+	"""
+	Cannot contains same layer type
+	Layer should contain at least body
+	"""
+	layers: [CreateSpriteInputLayer!]!
+}
+
+input CreateLayerInput {
+	type: DudeSpriteLayerType!
+	color: String!
+	name: String!
+	image: Upload!
+}
+
+type DudeSprite {
+	id: UUID!
+	name: String!
+	listed: Boolean!
+	layers: [DudeSpriteLayer!]!
+	owner: TwirUser!
+}
+
+enum DudeSpriteLayerType {
+	BODY
+	EYES
+	MOUTH
+	COSMETICS
+}
+
+type DudeSpriteLayer {
+	id: UUID!
+	type: DudeSpriteLayerType!
+	color: String!
+	name: String!
+	"""
+	Image is base64 encoded string
+	"""
+	image: String!
+}
+
+type DudeUserChannelSprite {
+	id: UUID!
+	user: TwirUser!
+	channel: TwirUser!
+	sprite: DudeSprite!
+	banned: Boolean!
+	approved: Boolean!
+}

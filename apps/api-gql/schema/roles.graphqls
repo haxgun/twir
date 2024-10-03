@@ -80,6 +80,12 @@ enum ChannelRolePermissionEnum {
 
 	VIEW_GAMES
 	MANAGE_GAMES
+
+	"""
+	This roles gives permissions do view/manage streamer dudes, approve/reject dudes sprites
+	"""
+	DUDES_VIEW
+	DUDES_MANAGE
 }
 
 directive @hasChannelRolesDashboardPermission(permission: ChannelRolePermissionEnum) on FIELD_DEFINITION
