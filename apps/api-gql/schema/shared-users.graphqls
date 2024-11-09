@@ -10,4 +10,5 @@ type TwirUserTwitchInfo {
 	profileImageUrl: String!
 	description: String!
 	notFound: Boolean!
+	offlineImageUrl: String!
 }
