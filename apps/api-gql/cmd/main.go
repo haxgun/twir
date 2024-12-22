@@ -20,16 +20,19 @@ import (
 	"github.com/twirapp/twir/apps/api-gql/internal/services/badges"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/badges-users"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/badges-with-users"
+	"github.com/twirapp/twir/apps/api-gql/internal/services/channel_emote_usage"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/commands"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/commands_groups"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/commands_responses"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/commands_with_groups_and_responses"
+	"github.com/twirapp/twir/apps/api-gql/internal/services/dashboard"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/dashboard-widget-events"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/greetings"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/keywords"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/roles"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/roles_users"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/roles_with_roles_users"
+	"github.com/twirapp/twir/apps/api-gql/internal/services/streams"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/timers"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/twir-users"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/twitch"
@@ -93,6 +96,12 @@ import (
 
 	greetingsrepository "github.com/twirapp/twir/libs/repositories/greetings"
 	greetingsrepositorypgx "github.com/twirapp/twir/libs/repositories/greetings/pgx"
+
+	streamsrepository "github.com/twirapp/twir/libs/repositories/streams"
+	streamsrepositorypgx "github.com/twirapp/twir/libs/repositories/streams/pgx"
+
+	channelemoteusagerepository "github.com/twirapp/twir/libs/repositories/channel_emote_usage"
+	channelemoteusagerepositorypgx "github.com/twirapp/twir/libs/repositories/channel_emote_usage/pgx"
 )
 
 func main() {
@@ -128,6 +137,9 @@ func main() {
 			roles_users.New,
 			roles_with_roles_users.New,
 			twitch.New,
+			streams.New,
+			channel_emote_usage.New,
+			dashboard.New,
 		),
 		// repositories
 		fx.Provide(
@@ -194,6 +206,14 @@ func main() {
 			fx.Annotate(
 				greetingsrepositorypgx.NewFx,
 				fx.As(new(greetingsrepository.Repository)),
+			),
+			fx.Annotate(
+				streamsrepositorypgx.New,
+				fx.As(new(streamsrepository.Repository)),
+			),
+			fx.Annotate(
+				channelemoteusagerepositorypgx.NewFx,
+				fx.As(new(channelemoteusagerepository.Repository)),
 			),
 		),
 		// grpc clients
