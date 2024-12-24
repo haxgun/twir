@@ -32,6 +32,7 @@ import (
 	"github.com/twirapp/twir/apps/api-gql/internal/services/roles_users"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/roles_with_roles_users"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/timers"
+	ttsvoices "github.com/twirapp/twir/apps/api-gql/internal/services/tts_voices"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/twir-users"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/twitch"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/users"
@@ -130,6 +131,7 @@ func main() {
 			roles_with_roles_users.New,
 			twitch.New,
 			channels.New,
+			ttsvoices.New,
 		),
 		// repositories
 		fx.Provide(

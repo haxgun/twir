@@ -1,0 +1,53 @@
+extend type Query {
+	overlaysTTS: OverlaysTTSOutput @isAuthenticated @hasAccessToSelectedDashboard @hasChannelRolesDashboardPermission(permission: MANAGE_OVERLAYS)
+	overlaysTTSVoices: OverlaysTTSVoices! @isAuthenticated
+	overlaysTTSSay: Bytes
+}
+
+extend type Mutation {
+	overlaysTTSUpdate(input: OverlaysTTSInput!): OverlaysTTSOutput! @isAuthenticated @hasAccessToSelectedDashboard @hasChannelRolesDashboardPermission(permission: MANAGE_OVERLAYS)
+}
+
+type OverlaysTTSOutput {
+	enabled: Boolean!
+	rate: Int!
+	volume: Int!
+	pitch: Int!
+	voice: String!
+	allowUsersChooseVoiceInMainCommand: Boolean!
+	maxSymbols: Int!
+	disallowedVoices: [String!]!
+	doNotReadEmoji: Boolean!
+	doNotReadTwitchEmotes: Boolean!
+	doNotReadLinks: Boolean!
+	readChatMessages: Boolean!
+	readChatMessagesNicknames: Boolean!
+}
+
+type OverlaysTTSVoices {
+	rhvoices: [RHVoice!]!
+}
+
+type RHVoice {
+	country: String!
+	gender: String!
+	lang: String!
+	name: String!
+	code: String!
+}
+
+input OverlaysTTSInput {
+	enabled: Boolean!
+	rate: Int!
+	volume: Int!
+	pitch: Int!
+	voice: String!
+	allowUsersChooseVoiceInMainCommand: Boolean!
+	maxSymbols: Int!
+	disallowedVoices: [String!]!
+	doNotReadEmoji: Boolean!
+	doNotReadTwitchEmotes: Boolean!
+	doNotReadLinks: Boolean!
+	readChatMessages: Boolean!
+	readChatMessagesNicknames: Boolean!
+}

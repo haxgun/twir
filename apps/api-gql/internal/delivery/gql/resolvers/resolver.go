@@ -26,6 +26,7 @@ import (
 	"github.com/twirapp/twir/apps/api-gql/internal/services/roles_users"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/roles_with_roles_users"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/timers"
+	ttsvoices "github.com/twirapp/twir/apps/api-gql/internal/services/tts_voices"
 	twir_users "github.com/twirapp/twir/apps/api-gql/internal/services/twir-users"
 	twitchservice "github.com/twirapp/twir/apps/api-gql/internal/services/twitch"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/users"
@@ -78,6 +79,7 @@ type Deps struct {
 	RolesUsersService                     *roles_users.Service
 	RolesWithUsersService                 *roles_with_roles_users.Service
 	TwitchService                         *twitchservice.Service
+	TTSVoicesService                      *ttsvoices.Service
 }
 
 type Resolver struct {

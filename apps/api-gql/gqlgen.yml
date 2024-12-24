@@ -91,3 +91,5 @@ models:
   UUID:
     model:
       - github.com/99designs/gqlgen/graphql.UUID
+  Bytes:
+    model: "github.com/twirapp/twir/apps/api-gql/internal/delivery/gql/types.Bytes"
