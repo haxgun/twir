@@ -1,4 +1,4 @@
-go 1.23.2
+go 1.23.4
 
 use (
 	./apps/api
@@ -11,6 +11,7 @@ use (
 	./apps/eventsub
 	./apps/parser
 	./apps/scheduler
+	./apps/telegram
 	./apps/timers
 	./apps/tokens
 	./apps/websockets
@@ -29,10 +30,10 @@ use (
 	./libs/migrations
 	./libs/pubsub
 	./libs/redis_keys
+	./libs/repositories
 	./libs/sentry
 	./libs/twitch
 	./libs/types
 	./libs/uptrace
 	./libs/utils
-	./libs/repositories
 )

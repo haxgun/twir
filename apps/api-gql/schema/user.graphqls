@@ -25,6 +25,7 @@ type AuthenticatedUser implements TwirUser {
 	selectedDashboardId: String!
 	selectedDashboardTwitchUser: TwirUserTwitchInfo! @goField(forceResolver: true)
 	availableDashboards: [Dashboard!]! @goField(forceResolver: true)
+	subscriptionTier: SubscriptionTier
 }
 
 type Dashboard {

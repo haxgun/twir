@@ -13,6 +13,7 @@ import (
 	"github.com/twirapp/twir/libs/bus-core/eventsub"
 	"github.com/twirapp/twir/libs/bus-core/parser"
 	"github.com/twirapp/twir/libs/bus-core/scheduler"
+	"github.com/twirapp/twir/libs/bus-core/telegram"
 	"github.com/twirapp/twir/libs/bus-core/timers"
 	"github.com/twirapp/twir/libs/bus-core/twitch"
 	"github.com/twirapp/twir/libs/bus-core/websockets"
@@ -31,6 +32,7 @@ type Bus struct {
 	Scheduler         *schedulerBus
 	ChatMessages      Queue[twitch.TwitchChatMessage, struct{}]
 	ChatMessagesStore *chatMessagesStoreBus
+	Telegram          *telegramBus
 }
 
 func NewNatsBus(nc *nats.Conn) *Bus {
@@ -225,6 +227,14 @@ func NewNatsBus(nc *nats.Conn) *Bus {
 				nc,
 				CHAT_MESSAGES_STRORE_REMOVE_MESSAGES_SUBJECT,
 				1*time.Minute,
+				nats.GOB_ENCODER,
+			),
+		},
+		Telegram: &telegramBus{
+			GenerateSubscriptionUrl: NewNatsQueue[telegram.GenerateSubscriptionUrlInput, string](
+				nc,
+				telegram.GenerateSubscriptionUrlSubject,
+				500*time.Millisecond,
 				nats.GOB_ENCODER,
 			),
 		},

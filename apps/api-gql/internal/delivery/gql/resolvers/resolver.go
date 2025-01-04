@@ -21,6 +21,7 @@ import (
 	"github.com/twirapp/twir/apps/api-gql/internal/services/commands_with_groups_and_responses"
 	dashboard_widget_events "github.com/twirapp/twir/apps/api-gql/internal/services/dashboard-widget-events"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/greetings"
+	"github.com/twirapp/twir/apps/api-gql/internal/services/integrations"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/keywords"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/roles"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/roles_users"
@@ -35,6 +36,8 @@ import (
 	generic_cacher "github.com/twirapp/twir/libs/cache/generic-cacher"
 	twitchcahe "github.com/twirapp/twir/libs/cache/twitch"
 	"github.com/twirapp/twir/libs/grpc/tokens"
+	benefitsrepositorymodel "github.com/twirapp/twir/libs/repositories/subscriptions_benefits/model"
+	tiersrepository "github.com/twirapp/twir/libs/repositories/subscriptions_tiers"
 	"go.uber.org/fx"
 	"gorm.io/gorm"
 )
@@ -78,6 +81,11 @@ type Deps struct {
 	RolesUsersService                     *roles_users.Service
 	RolesWithUsersService                 *roles_with_roles_users.Service
 	TwitchService                         *twitchservice.Service
+	IntegrationsService                   *integrations.Service
+
+	// TODO: refactor to service
+	TiersRepository     tiersrepository.Repository
+	TiersBenefitsCacher *generic_cacher.GenericCacher[[]benefitsrepositorymodel.SubscriptionBenefit]
 }
 
 type Resolver struct {

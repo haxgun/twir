@@ -1,0 +1,21 @@
+extend type Query {
+	subscriptionTiers: [SubscriptionTier!]!
+	subscriptionTiersGetTelegramSubscribeUrl(tierId: UUID!): String!
+}
+
+type SubscriptionTier {
+	id: UUID!
+	name: String!
+	createdAt: Time!
+	updatedAt: Time!
+	priceCents: Int!
+	benefits: [SubscriptionTierBenefit!]!
+}
+
+type SubscriptionTierBenefit {
+	id: UUID!
+	name: String!
+	createdAt: Time!
+	updatedAt: Time!
+	quantityValue: Int!
+}

@@ -9,6 +9,7 @@ const config: CodegenConfig = {
 	config: {
 		scalars: {
 			Upload: 'File',
+			Map: 'Object',
 		},
 	},
 	schema: schemaDir,

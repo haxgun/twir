@@ -185,6 +185,10 @@ export function newRouter() {
 					component: () => import('../pages/Files.vue'),
 				},
 				{
+					path: '/dashboard/premium',
+					component: () => import('@/features/premium/premium.vue'),
+				},
+				{
 					name: 'RegistryOverlayEdit',
 					path: '/dashboard/registry/overlays/:id',
 					component: () => import('../components/registry/overlays/edit.vue'),

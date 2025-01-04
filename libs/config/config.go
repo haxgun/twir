@@ -47,6 +47,8 @@ type Config struct {
 	UptraceDsn           string `required:"false" envconfig:"UPTRACE_DSN"`
 	NatsUrl              string `required:"false" default:"localhost:4222" envconfig:"NATS_URL"`
 	ValorantHenrikApiKey string `required:"false" envconfig:"VALORANT_HENRIK_API_KEY"`
+
+	TelegramBotApiToken string `required:"false" envconfig:"TELEGRAM_BOT_API_TOKEN"`
 }
 
 func NewWithEnvPath(envPath string) (*Config, error) {

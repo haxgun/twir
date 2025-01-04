@@ -27,6 +27,7 @@ import (
 	"github.com/twirapp/twir/apps/api-gql/internal/services/commands_with_groups_and_responses"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/dashboard-widget-events"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/greetings"
+	"github.com/twirapp/twir/apps/api-gql/internal/services/integrations"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/keywords"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/roles"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/roles_users"
@@ -40,6 +41,7 @@ import (
 	"github.com/twirapp/twir/libs/baseapp"
 	commandscache "github.com/twirapp/twir/libs/cache/commands"
 	keywordscacher "github.com/twirapp/twir/libs/cache/keywords"
+	"github.com/twirapp/twir/libs/cache/subscription_tier_benefits"
 	twitchcache "github.com/twirapp/twir/libs/cache/twitch"
 	"github.com/twirapp/twir/libs/grpc/clients"
 	"github.com/twirapp/twir/libs/grpc/events"
@@ -94,6 +96,15 @@ import (
 
 	greetingsrepository "github.com/twirapp/twir/libs/repositories/greetings"
 	greetingsrepositorypgx "github.com/twirapp/twir/libs/repositories/greetings/pgx"
+
+	channelsintegrationstelegramrepository "github.com/twirapp/twir/libs/repositories/channels_integrations_telegram"
+	channelsintegrationstelegramrepositorypgx "github.com/twirapp/twir/libs/repositories/channels_integrations_telegram/pgx"
+
+	benefitsrepository "github.com/twirapp/twir/libs/repositories/subscriptions_benefits"
+	benefitsrepositorypgx "github.com/twirapp/twir/libs/repositories/subscriptions_benefits/pgx"
+
+	tiersrepository "github.com/twirapp/twir/libs/repositories/subscriptions_tiers"
+	tiersrepositorypgx "github.com/twirapp/twir/libs/repositories/subscriptions_tiers/pgx"
 )
 
 func main() {
@@ -105,6 +116,7 @@ func main() {
 		),
 		fx.Provide(
 			twitchcache.New,
+			subscription_tier_benefits.New,
 		),
 		// services
 		fx.Provide(
@@ -130,6 +142,7 @@ func main() {
 			roles_with_roles_users.New,
 			twitch.New,
 			channels.New,
+			integrations.New,
 		),
 		// repositories
 		fx.Provide(
@@ -196,6 +209,18 @@ func main() {
 			fx.Annotate(
 				greetingsrepositorypgx.NewFx,
 				fx.As(new(greetingsrepository.Repository)),
+			),
+			fx.Annotate(
+				channelsintegrationstelegramrepositorypgx.NewFx,
+				fx.As(new(channelsintegrationstelegramrepository.Repository)),
+			),
+			fx.Annotate(
+				benefitsrepositorypgx.NewFx,
+				fx.As(new(benefitsrepository.Repository)),
+			),
+			fx.Annotate(
+				tiersrepositorypgx.NewFx,
+				fx.As(new(tiersrepository.Repository)),
 			),
 		),
 		// grpc clients

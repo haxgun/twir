@@ -9,6 +9,7 @@ import (
 	"github.com/twirapp/twir/libs/bus-core/eventsub"
 	"github.com/twirapp/twir/libs/bus-core/parser"
 	"github.com/twirapp/twir/libs/bus-core/scheduler"
+	"github.com/twirapp/twir/libs/bus-core/telegram"
 	"github.com/twirapp/twir/libs/bus-core/timers"
 	"github.com/twirapp/twir/libs/bus-core/twitch"
 	"github.com/twirapp/twir/libs/bus-core/websockets"
@@ -71,4 +72,8 @@ type schedulerBus struct {
 type chatMessagesStoreBus struct {
 	GetChatMessagesByTextForDelete Queue[chat_messages_store.GetChatMessagesByTextRequest, chat_messages_store.GetChatMessagesByTextResponse]
 	RemoveMessages                 Queue[chat_messages_store.RemoveMessagesRequest, struct{}]
+}
+
+type telegramBus struct {
+	GenerateSubscriptionUrl Queue[telegram.GenerateSubscriptionUrlInput, string]
 }
