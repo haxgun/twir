@@ -2,7 +2,6 @@ package overlays
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 
 	"github.com/goccy/go-json"
@@ -25,18 +24,6 @@ type overlayGetLayersResponse struct {
 	Layers    []model.ChannelOverlayLayer `json:"layers"`
 }
 
-func textToBase64(text string) string {
-	return base64.StdEncoding.EncodeToString([]byte(text))
-}
-
-func base64ToText(text string) string {
-	bytes, err := base64.StdEncoding.DecodeString(text)
-	if err != nil {
-		return ""
-	}
-	return string(bytes)
-}
-
 func (c *Registry) handleMessage(session *melody.Session, msg []byte) {
 	var message types.WebSocketMessage
 	if err := json.Unmarshal(msg, &message); err != nil {
@@ -56,23 +43,21 @@ func (c *Registry) handleMessage(session *melody.Session, msg []byte) {
 		var layer model.ChannelOverlayLayer
 		if err := c.gorm.
 			Preload("Overlay").
-			Find(&layer, "id = ?", data.LayerID).
+			Find(&layer, "id = ? AND type = ?", data.LayerID, "HTML").
 			Error; err != nil {
 			c.logger.Error(err.Error())
 			return
 		}
 
-		if layer.ID.String() == "" || layer.Overlay == nil {
+		if layer.ID.String() == "" || layer.Overlay == nil || layer.SettingsHtmlHtml == nil {
 			return
 		}
-
-		text := base64ToText(layer.Settings.HtmlOverlayHTML)
 
 		res, err := c.bus.Parser.ParseVariablesInText.Request(
 			context.Background(),
 			parser.ParseVariablesInTextRequest{
 				ChannelID: layer.Overlay.ChannelID,
-				Text:      text,
+				Text:      *layer.SettingsHtmlHtml,
 			},
 		)
 		if err != nil {
@@ -83,7 +68,7 @@ func (c *Registry) handleMessage(session *melody.Session, msg []byte) {
 		if err := session.Write(
 			[]byte(fmt.Sprintf(
 				`{"eventName":"parsedLayerVariables", "data": "%s", "layerId": "%s"}`,
-				textToBase64(res.Data.Text),
+				res.Data.Text,
 				layer.ID.String(),
 			)),
 		); err != nil {

@@ -1,45 +1,40 @@
 <script setup lang="ts">
-import { OverlayLayer, OverlayLayerType } from '@twir/api/messages/overlays/overlays';
-import { NGrid, NGridItem } from 'naive-ui';
-import { useI18n } from 'vue-i18n';
+import { NGrid, NGridItem } from 'naive-ui'
+import { useI18n } from 'vue-i18n'
 
-import Card from '@/components/card/card.vue';
+import Card from '@/components/card/card.vue'
+import { type CustomOverlayLayer, CustomOverlayLayerType } from '@/gql/graphql'
 
 defineEmits<{
-	select: [OverlayLayer]
-}>();
+	select: [CustomOverlayLayer]
+}>()
 
-const { t } = useI18n();
+const { t } = useI18n()
 </script>
 
 <template>
-	<n-grid responsive="screen" cols="1 s:2 m:3 l:4">
-		<n-grid-item :span="1">
-			<card
+	<NGrid responsive="screen" cols="1 s:2 m:3 l:4">
+		<NGridItem :span="1">
+			<Card
 				class="cursor-pointer"
 				title="HTML"
 				@click="() => {
 					$emit('select', {
-						id: '',
-						posX: 0,
-						posY: 0,
+						transformString: '',
 						width: 200,
 						height: 200,
 						settings: {
-							htmlOverlayCss: '.text { color: red }',
-							htmlOverlayHtml: `<span class='text'>$(stream.uptime)</span>`,
-							htmlOverlayHtmlDataPollSecondsInterval: 5,
-							htmlOverlayJs: `
+							html_css: '.text { color: red }',
+							html_html: `<span class='text'>$(stream.uptime)</span>`,
+							html_pollSecondsInterval: 5,
+							html_js: `
 // will be triggered, when new overlay data comes from backend
 function onDataUpdate() {
 	console.log('updated')
 }
-							`
+							`,
 						},
-						createdAt: '',
-						overlayId: '',
-						type: OverlayLayerType.HTML,
-						updatedAt: '',
+						type: CustomOverlayLayerType.Html,
 						periodicallyRefetchData: true,
 					})
 				}"
@@ -47,7 +42,7 @@ function onDataUpdate() {
 				<template #content>
 					{{ t('overlaysRegistry.html.description') }}
 				</template>
-			</card>
-		</n-grid-item>
-	</n-grid>
+			</Card>
+		</NGridItem>
+	</NGrid>
 </template>

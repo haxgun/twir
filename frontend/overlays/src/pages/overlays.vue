@@ -29,7 +29,7 @@ watch(layers, (layers) => {
 
 			setInterval(
 				() => requestLayerData(layer.id),
-				layer.settings.htmlOverlayDataPollSecondsInterval * 1000,
+				(layer.settings_html_data_poll_seconds_interval ?? 1) * 1000,
 			)
 		}
 	}

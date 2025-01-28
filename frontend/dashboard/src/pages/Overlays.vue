@@ -15,7 +15,8 @@ import { onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 
-import { useOverlaysRegistry, useProfile, useUserAccessFlagChecker } from '@/api/index.js'
+import { useCustomOverlaysApi } from '@/api/custom-overlays'
+import { useProfile, useUserAccessFlagChecker } from '@/api/index.js'
 import Card from '@/components/card/card.vue'
 import { responsiveCols } from '@/components/consants.js'
 import Brb from '@/components/overlays/brb.vue'
@@ -25,7 +26,6 @@ import Kappagen from '@/components/overlays/kappagen.vue'
 import NowPlaying from '@/components/overlays/now-playing.vue'
 import OBS from '@/components/overlays/obs.vue'
 import TTS from '@/components/overlays/tts.vue'
-import { convertOverlayLayerTypeToText } from '@/components/registry/overlays/helpers.js'
 import FaceitStats from '@/features/overlays/faceit-stats/ui/card.vue'
 import { ChannelRolePermissionEnum } from '@/gql/graphql'
 import { copyToClipBoard } from '@/helpers/index.js'
@@ -42,10 +42,10 @@ async function copyUrl(id: string) {
 		duration: 2500,
 	})
 }
-const overlaysManager = useOverlaysRegistry()
-const deleter = overlaysManager.deleteOne
-const { data: customOverlays, refetch } = overlaysManager.getAll({})
-onMounted(refetch)
+const overlaysManager = useCustomOverlaysApi()
+const deleter = overlaysManager.useDelete()
+const { data: customOverlays, executeQuery } = overlaysManager.useData()
+onMounted(executeQuery)
 
 const router = useRouter()
 
@@ -87,7 +87,7 @@ function editCustomOverlay(id?: string) {
 				<Brb />
 			</NGridItem>
 
-			<NGridItem v-for="overlay of customOverlays?.overlays" :key="overlay.id" :span="1">
+			<NGridItem v-for="overlay of customOverlays?.customOverlays" :key="overlay.id" :span="1">
 				<Card
 					:title="overlay.name"
 					style="height: 100%;"
@@ -95,7 +95,7 @@ function editCustomOverlay(id?: string) {
 					<template #content>
 						<div v-if="overlay.layers.length" class="flex gap-1 flex-wrap">
 							<NTag v-for="layer of overlay.layers" :key="layer.id" type="success">
-								{{ convertOverlayLayerTypeToText(layer.type) }}
+								{{ layer.type }}
 							</NTag>
 						</div>
 						<NAlert v-else type="warning" :title="t('overlaysRegistry.noLayersCreated.title')">
@@ -129,7 +129,7 @@ function editCustomOverlay(id?: string) {
 							<NPopconfirm
 								:positive-text="t('deleteConfirmation.confirm')"
 								:negative-text="t('deleteConfirmation.cancel')"
-								@positive-click="() => deleter.mutate({ id: overlay.id })"
+								@positive-click="() => deleter.executeMutation({ id: overlay.id })"
 							>
 								{{ t('deleteConfirmation.text') }}
 								<template #trigger>

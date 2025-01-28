@@ -133,19 +133,6 @@ export function useEventsManager() {
 	})
 }
 
-export function useOverlaysRegistry() {
-	return createCrudManager({
-		client: protectedApiClient,
-		queryKey: 'registry/overlays',
-		getAll: protectedApiClient?.overlaysGetAll,
-		update: protectedApiClient?.overlaysUpdate,
-		create: protectedApiClient?.overlaysCreate,
-		patch: null,
-		deleteOne: protectedApiClient?.overlaysDelete,
-		getOne: protectedApiClient?.overlaysGetOne,
-	})
-}
-
 export function useModerationManager() {
 	return createCrudManager({
 		client: protectedApiClient,

@@ -100,7 +100,7 @@ const { t } = useI18n()
 			</NFormItem>
 
 			<NFormItem :label="t('overlaysRegistry.html.updateInterval')">
-				<NInputNumber v-model:value="pollInterval" :min="5" :max="300" />
+				<NInputNumber v-model:value="pollInterval" :min="1" :max="300" />
 			</NFormItem>
 
 			<NAlert type="info" :title="t('overlaysRegistry.html.variablesAlert.title')">

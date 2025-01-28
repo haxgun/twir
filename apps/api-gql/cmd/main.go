@@ -27,6 +27,7 @@ import (
 	"github.com/twirapp/twir/apps/api-gql/internal/services/commands_groups"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/commands_responses"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/commands_with_groups_and_responses"
+	"github.com/twirapp/twir/apps/api-gql/internal/services/custom_overlays"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/dashboard-widget-events"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/greetings"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/keywords"
@@ -47,6 +48,7 @@ import (
 	"github.com/twirapp/twir/libs/grpc/clients"
 	"github.com/twirapp/twir/libs/grpc/events"
 	"github.com/twirapp/twir/libs/grpc/tokens"
+	"github.com/twirapp/twir/libs/grpc/websockets"
 	alertsrepository "github.com/twirapp/twir/libs/repositories/alerts"
 	alertsrepositorypgx "github.com/twirapp/twir/libs/repositories/alerts/pgx"
 	badgesrepository "github.com/twirapp/twir/libs/repositories/badges"
@@ -55,6 +57,8 @@ import (
 	badgesusersrepositorypgx "github.com/twirapp/twir/libs/repositories/badges_users/pgx"
 	channelsrepository "github.com/twirapp/twir/libs/repositories/channels"
 	channelsrepositorypgx "github.com/twirapp/twir/libs/repositories/channels/pgx"
+	channelscommandsprefixrepository "github.com/twirapp/twir/libs/repositories/channels_commands_prefix"
+	channelscommandsprefixpgx "github.com/twirapp/twir/libs/repositories/channels_commands_prefix/pgx"
 	chatmessagesrepository "github.com/twirapp/twir/libs/repositories/chat_messages"
 	chatmessagesrepositorypgx "github.com/twirapp/twir/libs/repositories/chat_messages/pgx"
 	commandsrepository "github.com/twirapp/twir/libs/repositories/commands"
@@ -65,6 +69,8 @@ import (
 	commandsresponserepositorypgx "github.com/twirapp/twir/libs/repositories/commands_response/pgx"
 	commandswithgroupsandresponsesrepository "github.com/twirapp/twir/libs/repositories/commands_with_groups_and_responses"
 	commandswithgroupsandresponsesrepositorypgx "github.com/twirapp/twir/libs/repositories/commands_with_groups_and_responses/pgx"
+	customoverlaysrepository "github.com/twirapp/twir/libs/repositories/custom_overlays"
+	customoverlaysrepositorypgx "github.com/twirapp/twir/libs/repositories/custom_overlays/pgx"
 	greetingsrepository "github.com/twirapp/twir/libs/repositories/greetings"
 	greetingsrepositorypgx "github.com/twirapp/twir/libs/repositories/greetings/pgx"
 	keywordsrepository "github.com/twirapp/twir/libs/repositories/keywords"
@@ -81,9 +87,6 @@ import (
 	userswithchannelrepositorypgx "github.com/twirapp/twir/libs/repositories/users_with_channel/pgx"
 	variablesrepository "github.com/twirapp/twir/libs/repositories/variables"
 	variablespgx "github.com/twirapp/twir/libs/repositories/variables/pgx"
-
-	channelscommandsprefixrepository "github.com/twirapp/twir/libs/repositories/channels_commands_prefix"
-	channelscommandsprefixpgx "github.com/twirapp/twir/libs/repositories/channels_commands_prefix/pgx"
 	"github.com/twirapp/twir/libs/uptrace"
 	"go.uber.org/fx"
 )
@@ -169,6 +172,10 @@ func main() {
 				channelscommandsprefixpgx.NewFx,
 				fx.As(new(channelscommandsprefixrepository.Repository)),
 			),
+			fx.Annotate(
+				customoverlaysrepositorypgx.NewFx,
+				fx.As(new(customoverlaysrepository.Repository)),
+			),
 		),
 		// services
 		fx.Provide(
@@ -196,6 +203,7 @@ func main() {
 			channels.New,
 			chat_messages.New,
 			channels_commands_prefix.New,
+			custom_overlays.New,
 		),
 		// grpc clients
 		fx.Provide(
@@ -204,6 +212,9 @@ func main() {
 			},
 			func(config cfg.Config) events.EventsClient {
 				return clients.NewEvents(config.AppEnv)
+			},
+			func(config cfg.Config) websockets.WebsocketClient {
+				return clients.NewWebsocket(config.AppEnv)
 			},
 		),
 		// app itself

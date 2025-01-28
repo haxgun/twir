@@ -1,0 +1,95 @@
+extend type Query {
+	customOverlays: [CustomOverlay!]! @isAuthenticated @hasAccessToSelectedDashboard @hasChannelRolesDashboardPermission(permission: VIEW_OVERLAYS)
+}
+
+extend type Mutation {
+	customOverlaysCreate(input: CustomOverlayCreateInput!): CustomOverlay! @isAuthenticated @hasAccessToSelectedDashboard @hasChannelRolesDashboardPermission(permission: MANAGE_OVERLAYS)
+	customOverlaysUpdate(input: CustomOverlayUpdateInput!): CustomOverlay! @isAuthenticated @hasAccessToSelectedDashboard @hasChannelRolesDashboardPermission(permission: MANAGE_OVERLAYS)
+	customOverlaysDelete(id: UUID!): Boolean! @isAuthenticated @hasAccessToSelectedDashboard @hasChannelRolesDashboardPermission(permission: MANAGE_OVERLAYS)
+	customOverlaysParseHtml(input: CustomOverlaysParseHtmlInput!): String! @isAuthenticated @hasAccessToSelectedDashboard
+}
+
+enum CustomOverlayLayerType {
+	HTML
+	IMAGE
+}
+
+type CustomOverlay {
+	id: UUID!
+	channelId: String!
+	name: String!
+	createdAt: Time!
+	updatedAt: Time!
+	layers: [CustomOverlayLayer!]!
+	width: Int!
+	height: Int!
+}
+
+type CustomOverlayLayer {
+	id: UUID!
+	type: CustomOverlayLayerType!
+	overlayId: UUID!
+	width: Int!
+	height: Int!
+	createdAt: Time!
+	updatedAt: Time!
+	periodicallyRefetchData: Boolean!
+	transformString: String!
+
+	settings: CustomOverlayLayerSettings!
+}
+
+interface CustomOverlayLayerSettings {
+	emptyHolder: String
+}
+
+type CustomOverlayLayerSettingsHTML implements CustomOverlayLayerSettings {
+	emptyHolder: String
+	html: String!
+	css: String!
+	js: String!
+	pollSecondsInterval: Int!
+}
+
+type CustomOverlayLayerSettingsImage implements CustomOverlayLayerSettings {
+	emptyHolder: String
+	url: String!
+}
+
+input CustomOverlayCreateInput {
+	name: String! @validate(constraint: "max=50")
+	layers: [CustomOverlayLayerInput!]! @validate(constraint: "max=100")
+	width: Int! @validate(constraint: "max=10000")
+	height: Int! @validate(constraint: "max=10000")
+}
+
+input CustomOverlayUpdateInput {
+	id: UUID!
+	name: String!
+	layers: [CustomOverlayLayerInput!]!
+	width: Int!
+	height: Int!
+}
+
+input CustomOverlayLayerInput {
+	type: CustomOverlayLayerType!
+	width: Int!
+	height: Int!
+	periodicallyRefetchData: Boolean!
+	transformString: String!
+
+	settings: CustomOverlayLayerSettingsInput!
+}
+
+input CustomOverlayLayerSettingsInput {
+	emptyHolder: String
+	html_html: String
+	html_css: String
+	html_js: String
+	html_pollSecondsInterval: Int
+	image_url: String
+}
+
+input CustomOverlaysParseHtmlInput {
+	text: String!
+}

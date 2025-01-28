@@ -21,6 +21,7 @@ import (
 	"github.com/twirapp/twir/apps/api-gql/internal/services/commands"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/commands_responses"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/commands_with_groups_and_responses"
+	"github.com/twirapp/twir/apps/api-gql/internal/services/custom_overlays"
 	dashboard_widget_events "github.com/twirapp/twir/apps/api-gql/internal/services/dashboard-widget-events"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/greetings"
 	"github.com/twirapp/twir/apps/api-gql/internal/services/keywords"
@@ -82,6 +83,7 @@ type Deps struct {
 	TwitchService                         *twitchservice.Service
 	ChatMessagesService                   *chat_messages.Service
 	ChannelsCommandsPrefix                *channels_commands_prefix.Service
+	CustomOverlaysService                 *custom_overlays.Service
 }
 
 type Resolver struct {

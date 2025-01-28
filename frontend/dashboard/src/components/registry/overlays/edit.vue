@@ -1,50 +1,35 @@
 <script setup lang="ts">
 import { IconCopy , IconDeviceFloppy } from '@tabler/icons-vue'
-import { type Overlay, OverlayLayerType } from '@twir/api/messages/overlays/overlays'
 import { NButton, NDivider, NFormItem, NInput, NInputNumber, NModal, useMessage } from 'naive-ui'
-import { computed, ref, toRaw, watch } from 'vue'
+import { computed, onMounted, ref, toRaw, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useRoute } from 'vue-router'
+import { useRouter } from 'vue-router'
 import Moveable from 'vue3-moveable'
 
 import HtmlLayer from './layers/html.vue'
 import HtmlLayerForm from './layers/htmlForm.vue'
 
-import type { OnDrag, OnResize } from 'vue3-moveable'
+import type { CustomOverlayCreateInput, CustomOverlayUpdateInput } from '@/gql/graphql'
+import type { OnDrag, OnResize, OnWarp } from 'vue3-moveable'
 
+import { useCustomOverlaysApi } from '@/api/custom-overlays'
 import {
-	useOverlaysRegistry,
 	useProfile,
 } from '@/api/index.js'
 import NewSelector from '@/components/registry/overlays/newSelector.vue'
+import { CustomOverlayLayerType } from '@/gql/graphql.js'
 import { copyToClipBoard } from '@/helpers'
 
 const { t } = useI18n()
 
-const route = useRoute()
-const overlayId = computed(() => {
-	const id = route.params.id
-	if (typeof id !== 'string' || id === 'new') {
-		return ''
-	}
+const router = useRouter()
 
-	return id
-})
+const overlaysManager = useCustomOverlaysApi()
+const { data: overlays } = overlaysManager.useData()
+const creator = overlaysManager.useCreate()
+const updater = overlaysManager.useUpdate()
 
-const overlaysManager = useOverlaysRegistry()
-const creator = overlaysManager.create
-const updater = overlaysManager.update!
-const { data: overlay, refetch } = overlaysManager.getOne!({
-	id: overlayId.value,
-	isQueryDisabled: true,
-})
-
-watch(overlayId, (v) => {
-	if (!v) return
-	refetch()
-}, { immediate: true })
-
-type OverlayForm = Omit<Overlay, 'updatedAt' | 'channelId' | 'createdAt'>
+type OverlayForm = CustomOverlayCreateInput | CustomOverlayUpdateInput
 
 const formValue = ref<OverlayForm>({
 	id: '',
@@ -54,17 +39,57 @@ const formValue = ref<OverlayForm>({
 	height: 1080,
 })
 
-watch(overlay, (v) => {
+function setCurrentOverlay() {
+	const id = router.currentRoute.value.params.id
+	if (typeof id !== 'string' || id === 'new') {
+		return
+	}
+
+	const overlay = overlays.value?.customOverlays.find((overlay) => overlay.id === id)
+	if (!overlay) {
+		return
+	}
+
+	const raw = toRaw(overlay)
+
+	const input: CustomOverlayUpdateInput = {
+		id: raw.id,
+		height: raw.height,
+		width: raw.width,
+		layers: raw.layers.map((layer) => {
+			return {
+				type: layer.type,
+				periodicallyRefetchData: layer.periodicallyRefetchData,
+				width: layer.width,
+				height: layer.height,
+				transformString: layer.transformString,
+				settings: 'html' in layer.settings
+					? {
+						html_html: layer.settings.html,
+						html_css: layer.settings.css,
+						html_js: layer.settings.js,
+						html_pollSecondsInterval: layer.settings.pollSecondsInterval,
+					}
+					: 'url' in layer.settings
+						? {
+							image_url: layer.settings.url,
+						}
+						: {},
+			}
+		}),
+		name: raw.name,
+	}
+
+	formValue.value = input
+}
+
+watch(overlays, (v) => {
 	if (!v) return
 
-	const raw = toRaw(v)
-
-	formValue.value.id = raw.id
-	formValue.value.name = raw.name
-	formValue.value.layers = raw.layers
-	formValue.value.width = raw.width
-	formValue.value.height = raw.height
+	setCurrentOverlay()
 })
+
+onMounted(() => setCurrentOverlay())
 
 const messages = useMessage()
 
@@ -81,21 +106,25 @@ async function save() {
 		return
 	}
 
-	if (data.id) {
-		await updater.mutateAsync({
-			...data,
-			id: data.id,
+	if ('id' in data && data.id) {
+		await updater.executeMutation({
+			updateInput: data,
 		})
 	} else {
-		const newOverlayData = await creator.mutateAsync(data)
+		const { data: newOverlay } = await creator.executeMutation({
+			createInput: {
+				...data,
+				// eslint-disable-next-line ts/ban-ts-comment
+				// @ts-expect-error
+				id: undefined,
+			},
+		})
 
-		const raw = toRaw(newOverlayData)
+		if (!newOverlay) {
+			return
+		}
 
-		formValue.value.id = raw.id
-		formValue.value.name = raw.name
-		formValue.value.layers = raw.layers
-		formValue.value.width = raw.width
-		formValue.value.height = raw.height
+		router.push(`/dashboard/registry/overlays/${newOverlay.customOverlaysCreate.id}`)
 	}
 
 	messages.success(t('sharedTexts.saved'))
@@ -113,10 +142,15 @@ interface EventWithLayerIndex {
 function onDrag({ target, transform, index }: OnDrag & EventWithLayerIndex) {
 	focus(index)
 	target.style.transform = transform
-	const [x, y] = transform.match(/(\d+\.\d+|\d+)px/g)!
 
-	formValue.value.layers[index].posX = Number.parseInt(x)
-	formValue.value.layers[index].posY = Number.parseInt(y)
+	formValue.value.layers[index].transformString = transform
+}
+
+function onWarp({ target, transform, index }: OnWarp & EventWithLayerIndex) {
+	focus(index)
+	target.style.transform = transform
+
+	formValue.value.layers[index].transformString = transform
 }
 
 function onResize({ target, width, height, transform, index }: OnResize & EventWithLayerIndex) {
@@ -138,18 +172,33 @@ function removeLayer(index: number) {
 const isOverlayNewModalOpened = ref(false)
 
 const userProfile = useProfile()
-async function copyUrl(id: string) {
-	await copyToClipBoard(`${window.location.origin}/overlays/${userProfile.data.value?.apiKey}/registry/overlays/${id}`)
+async function copyUrl() {
+	if (!('id' in formValue.value)) return
+
+	await copyToClipBoard(`${window.location.origin}/overlays/${userProfile.data.value?.apiKey}/registry/overlays/${formValue.value.id}`)
 }
 
 const innerWidth = computed(() => window.innerWidth)
+
+const mode = ref<'resize' | 'warp'>('resize')
 </script>
 
 <template>
-	<div class="flex max-w-full">
-		<div class="w-[85%]">
+	<div class="flex w-full relative">
+		<div class="w-[85%] absolute left-[275px]">
+			<div class="flex gap-2">
+				<NButton :type="mode === 'resize' ? 'success' : 'info'" secondary @click="mode = 'resize'">
+					Resize mode
+				</NButton>
+				<NButton :type="mode === 'warp' ? 'success' : 'info'" secondary @click="mode = 'warp'">
+					Warp mode
+				</NButton>
+				<NButton type="warning" secondary @click="resetTransform">
+					Reset transform
+				</NButton>
+			</div>
 			<div
-				class="container"
+				class="grid-container"
 				:style="{
 					width: `${formValue.width}px`,
 					height: `${formValue.height}px`,
@@ -158,15 +207,14 @@ const innerWidth = computed(() => window.innerWidth)
 			>
 				<div v-for="(layer, index) of formValue.layers" :key="index">
 					<HtmlLayer
-						v-if="layer.type === OverlayLayerType.HTML"
-						:posX="layer.posX"
-						:posY="layer.posY"
+						v-if="layer.type === CustomOverlayLayerType.Html"
+						:transformString="layer.transformString"
 						:width="layer.width"
 						:height="layer.height"
 						:index="index"
-						:text="layer.settings?.htmlOverlayHtml ?? ''"
-						:css="layer.settings?.htmlOverlayCss ?? ''"
-						:js="layer.settings?.htmlOverlayJs ?? ''"
+						:text="layer.settings?.html_html ?? ''"
+						:css="layer.settings?.html_css ?? ''"
+						:js="layer.settings?.html_js ?? ''"
 						:periodicallyRefetchData="layer.periodicallyRefetchData"
 					/>
 
@@ -174,27 +222,23 @@ const innerWidth = computed(() => window.innerWidth)
 						className="moveable"
 						:target="`#layer-${index}`"
 						:draggable="true"
-						:resizable="true"
+						:resizable="mode === 'resize'"
 						:rotatable="false"
 						:snappable="true"
+						:warpable="mode === 'warp'"
 						:bounds="{ left: 0, top: 0, right: 0, bottom: 0, position: 'css' }"
-						:persistData="({
-							height: layer.height,
-							width: layer.width,
-							left: layer.posX,
-							top: layer.posY,
-						})"
 						:origin="false"
 						:renderDirections="currentlyFocused === index ? ['nw', 'n', 'ne', 'w', 'e', 'sw', 's', 'se'] : []"
 						@drag="(opts) => onDrag({ ...opts, index })"
 						@resize="(opts) => onResize({ ...opts, index })"
 						@click="focus(index)"
+						@warp="(opts) => onWarp({ ...opts, index })"
 					>
-					</moveable>
+					</Moveable>
 				</div>
 			</div>
 		</div>
-		<div class="flex flex-col gap-1">
+		<div class="flex flex-col gap-1 relative">
 			<NButton
 				:disabled="!formValue.name || !formValue.layers.length" block secondary
 				type="success" @click="save"
@@ -203,8 +247,8 @@ const innerWidth = computed(() => window.innerWidth)
 				{{ t('sharedButtons.save') }}
 			</NButton>
 			<NButton
-				block secondary type="info" :disabled="!formValue.id"
-				@click="copyUrl(formValue.id)"
+				block secondary type="info" :disabled="!('id' in formValue)"
+				@click="copyUrl"
 			>
 				<IconCopy />
 				{{ t('overlays.copyOverlayLink') }}
@@ -244,12 +288,12 @@ const innerWidth = computed(() => window.innerWidth)
 			<div class="flex flex-col gap-3 w-full">
 				<template v-for="(layer, index) of formValue.layers">
 					<HtmlLayerForm
-						v-if="layer.type === OverlayLayerType.HTML"
+						v-if="layer.type === CustomOverlayLayerType.Html"
 						:key="index"
-						v-model:html="formValue.layers[index].settings!.htmlOverlayHtml"
-						v-model:css="formValue.layers[index].settings!.htmlOverlayCss"
-						v-model:js="formValue.layers[index].settings!.htmlOverlayJs"
-						v-model:pollInterval="formValue.layers[index].settings!.htmlOverlayHtmlDataPollSecondsInterval"
+						v-model:html="formValue.layers[index].settings!.html_html"
+						v-model:css="formValue.layers[index].settings!.html_css"
+						v-model:js="formValue.layers[index].settings!.html_js"
+
 						v-model:periodicallyRefetchData="formValue.layers[index].periodicallyRefetchData"
 						:isFocused="currentlyFocused === index"
 						:layerIndex="index"
@@ -276,7 +320,7 @@ const innerWidth = computed(() => window.innerWidth)
 </template>
 
 <style scoped>
-.container {
+.grid-container {
 	background-color: rgb(18, 18, 18);
 	transform-origin: 0px 0px;
 

@@ -1,10 +1,9 @@
-import { OverlayLayerType } from '@twir/api/messages/overlays/overlays';
+import type { CustomOverlayLayerSettingsHtml, CustomOverlayLayerSettingsImage } from '@/gql/graphql.js'
 
-export const convertOverlayLayerTypeToText = (type: OverlayLayerType) => {
-	switch (type) {
-		case OverlayLayerType.HTML:
-			return 'HTML';
-		default:
-			return 'UNKNOWN';
-	}
-};
+export function isSettingsHtml(settings: CustomOverlayLayerSettingsHtml | CustomOverlayLayerSettingsImage): settings is CustomOverlayLayerSettingsHtml {
+	return (settings as CustomOverlayLayerSettingsHtml).html !== undefined
+}
+
+export function isSettingsImage(settings: CustomOverlayLayerSettingsHtml | CustomOverlayLayerSettingsImage): settings is CustomOverlayLayerSettingsImage {
+	return 'image_url' in settings
+}

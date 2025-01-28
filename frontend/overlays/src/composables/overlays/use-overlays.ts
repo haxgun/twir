@@ -1,29 +1,23 @@
 import { createGlobalState, useWebSocket } from '@vueuse/core'
 import { ref, watch } from 'vue'
 
-import { base64DecodeUnicode, generateSocketUrlWithParams } from '@/helpers.js'
+import { generateSocketUrlWithParams } from '@/helpers.js'
 
 export interface Layer {
 	id: string
-	type: 'HTML'
-	settings: LayerSettings
+	type: 'HTML' | 'IMAGE'
 	overlay_id: string
-	pos_x: number
-	pos_y: number
 	width: number
 	height: number
 	createdAt: string
 	updatedAt: string
-	overlay: any
 	periodically_refetch_data: boolean
-	htmlContent?: string
-}
-
-export interface LayerSettings {
-	htmlOverlayDataPollSecondsInterval: number
-	htmlOverlayHtml: string
-	htmlOverlayCss: string
-	htmlOverlayJs: string
+	transform_string: string
+	settings_html_html?: string
+	settings_html_css?: string
+	settings_html_js?: string
+	settings_html_data_poll_seconds_interval?: any
+	settings_image_url?: any
 }
 
 export const useOverlays = createGlobalState(() => {
@@ -57,24 +51,11 @@ export const useOverlays = createGlobalState(() => {
 		const parsedData = JSON.parse(d)
 
 		if (parsedData.eventName === 'layers') {
-			const parsedLayers = parsedData.layers as Array<Layer>
-
-			layers.value = parsedLayers.map((l) => ({
-				...l,
-				settings: {
-					...l.settings,
-					htmlOverlayCss: l.settings.htmlOverlayCss
-						? base64DecodeUnicode(l.settings.htmlOverlayCss)
-						: '',
-					htmlOverlayJs: l.settings.htmlOverlayJs ? base64DecodeUnicode(l.settings.htmlOverlayJs) : '',
-				},
-			}))
+			layers.value = parsedData.layers as Array<Layer>
 		}
 
 		if (parsedData.eventName === 'parsedLayerVariables') {
 			parsedLayersData.value[parsedData.layerId] = parsedData.data
-				? base64DecodeUnicode(parsedData.data)
-				: ''
 		}
 
 		if (parsedData.eventName === 'refreshOverlays') {
@@ -99,6 +80,7 @@ export const useOverlays = createGlobalState(() => {
 		const url = generateSocketUrlWithParams('/overlays/registry/overlays', {
 			apiKey,
 		})
+		console.log(url)
 
 		overlayUrl.value = url
 		overlayId.value = _overlayId
